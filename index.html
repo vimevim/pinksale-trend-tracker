@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- https://github.com/vimevim/pinksale-trend-tracker/blob/main/index.html -->
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- CSS only -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <title>PinkSale Trend Tracker</title>
+    <style>
+        #youtube {
+            background-color: #ed302f;
+        }
+        
+        #telegram {
+            background-color: #0088cc;
+        }
+        
+        #github {
+            background-color: #333333;
+        }
+        #donate {
+            background-color: #ed302f;
+        }
+        #patreon {
+            background-color: #f96855;
+        }
+        
+    </style>
+</head>
+
+<body>
+    <div class="container my-5 text-white bg-dark rounded-3">
+        <div class="row p-5">
+            <div class="h-100 p-5">
+                <h1 class="fw-light">vimevim - PinkSale Trend Tracker</h1>
+                <p class="lead">
+                    You can find a lot of good launchpads on Pinksale and invest in them. PinkSale helps you to see most
+                    populer 12 tokens on its website, and you can track their trendings. But here, you can see more
+                    trends than on Pinksale.
+                    <hr>
+
+                    Fill the field below and click "search", after that you'll receive a "ding" sound for every minute if your target is in this list.
+                </p>
+                <p class="d-flex flex-row-reverse">
+                    <!-- Youtube -->
+                    <!-- <a href="#" target=”_blank”
+                        class="btn btn-primary border-0 my-2 mx-1" id="youtube"><i
+                            class="fab fa-youtube me-2"></i>YOUTUBE</a> -->
+                    <!-- Github -->
+                    <a href="https://github.com/vimevim" target=”_blank” class="btn btn-primary border-0 my-2 mx-1"
+                        id="github"><i class="fab fa-github me-2"></i>GITHUB</a>
+                    <!-- Telegram -->
+                    <a href="t.me/vimevim" target=”_blank” class="btn btn-primary border-0 my-2 mx-1"
+                        id="telegram"><i class="fab fa-telegram me-2"></i>
+                        TELEGRAM</a>
+
+                    <!-- Pateron -->
+                    <!-- <a href="#" target=”_blank” class="btn btn-primary border-0 my-2 mx-1" id="patreon"><i
+                            class="fab fa-patreon me-2"></i>
+                        PATERON</a> -->
+                    <!-- Heart -->
+                    <!-- <a href="" target=”_blank” class="btn btn-primary border-0 my-2 mx-1" id="donate"><i
+                            class="fa fa-heart me-2"></i>
+                        DONATE</a> -->
+                </p>
+                <hr class="text-light my-5 border-2" />
+                <div class="input-group my-3">
+                      <input type="text" class="form-control" id="symbol" aria-describedby="symbol" placeholder="Enter Presale Address or Token Symbol">
+                    <div class="input-group-append">
+                      <button class="btn btn-outline-secondary rounded-0" type="button" onclick="searchSymbol();">Search</button>
+                    </div>
+                  </div>
+                  
+                <div class="btn-group-vertical w-100" id="btn-group-vertical" role="group"
+                    aria-label="Vertical button group">
+                    <!-- <a type="button" class="btn btn-outline-light mb-2">Example</a> -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- JavaScript Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2"
+        crossorigin="anonymous"></script>
+    <script>
+        var tokenSymbol = ""
+        var currentSearchList = [];
+        var pastSearchList = [];
+        var response = {};
+        var seconds = 60;
+        var minutes = 3;
+        var miliseconds = minutes * seconds * 1000;
+        var nowFull = "";
+        var nowDate = "";
+        var nowTime = "";
+        var path = "https://zilsesiindir.com/wp-content/uploads/2022/03/circles.mp3";
+        const button_group = document.getElementById("btn-group-vertical")
+
+        function searchSymbol() {
+            const symbol = document.getElementById("symbol")
+            tokenSymbol = symbol.value.trim();
+            //console.log(tokenSymbol)
+            var buttons = document.getElementsByClassName("target-token");
+            for (var i = 0; i < buttons.length; i++) {
+                if (buttons[i].getAttribute("token") == tokenSymbol || buttons[i].getAttribute("address") == tokenSymbol) {
+                    buttons[i].classList.add("btn-outline-danger");
+                    buttons[i].classList.remove("btn-outline-light");
+                    ding();
+                } else {
+                    buttons[i].classList.remove("btn-outline-danger");
+                    buttons[i].classList.add("btn-outline-light");
+                }
+            }
+        }
+        function ding() {
+            var sound = new Audio(path);
+            sound.play();
+        }
+        function getData() {
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "https://pinksale-trending.s3.amazonaws.com/trending.json"); // https://pinksale-trending.s3.amazonaws.com/trending.json
+            xhr.addEventListener("readystatechange", function () {
+                if (this.readyState === 4) {
+                    response = JSON.parse(this.response);
+                    loopToDOM();
+                }
+            });
+            xhr.setRequestHeader("Accept", "application/json, text/plain, */*");
+            xhr.send();
+        }
+
+        function loopToDOM() {
+            button_group.innerHTML = ""
+            var items = response.data
+            var now = new Date();
+            var fix = ""
+            nowFull = now.toLocaleString()
+            nowDate = now.toLocaleDateString()
+            nowTime = now.toLocaleTimeString()
+            currentSearchList = []
+            for (var i = 0; i < items.length; i++) {
+                currentSearchList.push(items[i].address);
+                currentSearchList.push(items[i].token);
+                if (pastSearchList.includes(items[i].address)) {
+                    console.log("Already in past search list", nowFull);
+                } else {
+                    pastSearchList.push(items[i].token);
+                    pastSearchList.push(items[i].adress);
+                    console.log("Added to past search list", nowFull);
+                }
+                const button = document.createElement("a");
+                const token_name = document.createElement("span");
+                const date = document.createElement("span");
+                token_name.innerHTML = `#${i+1} - ${items[i].token}`;
+                date.innerHTML = nowFull;
+                button.classList.add("btn", "btn-outline-light", "mb-2", "d-flex", "justify-content-between", "target-token");
+                // set attribute
+                button.setAttribute("type", "button");
+                button.setAttribute("target", "_blank");
+                button.setAttribute("address", items[i].address);
+                button.setAttribute("token", items[i].token);
+                if (items[i].chainId == 56) {
+                    fix = "?chain=BSC";
+                } else if (items[i].chainId == 1) {
+                    fix = "?chain=ETH";
+                } else if (items[i].chainId == 137) {
+                    fix = "?chain=Matic";
+                }
+                URL = "https://www.pinksale.finance/#/launchpad/" + items[i].address + fix;
+                button.setAttribute("href", URL);
+                button.appendChild(token_name);
+                button.appendChild(date);
+                button_group.appendChild(button);
+                console.log(items[i].chainId);
+            }
+            searchSymbol();
+        }
+
+        setInterval(function () {
+            getData();
+        }, miliseconds);
+
+        window.onload = function () {
+            getData()
+        };
+
+        // Original
+        // var response = {}
+        // var xhr = new XMLHttpRequest();
+        // xhr.addEventListener("readystatechange", function() {
+        // if(this.readyState === 4) {
+        //     console.log(this.responseText);
+        //         response = JSON.parse(this.response)
+        // }
+        // });
+        // xhr.open("GET", "https://pinksale-trending.s3.ap-northeast-1.amazonaws.com/56_trending.json");
+        // xhr.setRequestHeader("Accept", "application/json, text/plain, */*");
+        // xhr.send();
+
+    </script>
+</body>
+
+</html>
